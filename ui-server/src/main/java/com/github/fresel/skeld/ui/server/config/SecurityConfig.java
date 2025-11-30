@@ -28,12 +28,16 @@ public class SecurityConfig {
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/public/**", "/error", "/logged-out", "/", "/webjars/**").permitAll()
+            .requestMatchers("/public/**", "/error", "/logged-out", "/access-denied", "/", "/webjars/**").permitAll()
             .anyRequest().authenticated())
         .oauth2Login(oauth2 -> oauth2
             .userInfoEndpoint(userInfo -> userInfo
                 .oidcUserService(this.oidcUserService()))
             .defaultSuccessUrl("/", true))
+        .exceptionHandling(exceptions -> exceptions
+            .accessDeniedHandler((request, response, accessDeniedException) -> {
+              response.sendRedirect("/access-denied");
+            }))
         .logout(logout -> logout
             .logoutUrl("/logout")
             .logoutSuccessUrl("/logged-out")
