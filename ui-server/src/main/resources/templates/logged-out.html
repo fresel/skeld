@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logged Out - Skeld</title>
+    <link rel="stylesheet" th:href="@{/webjars/bulma/1.0.4/css/bulma.min.css}">
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-half">
+                    <div class="notification is-success">
+                        <h1 class="title">Logged Out</h1>
+                        <p class="subtitle" th:text="${message}">You have been successfully logged out.</p>
+                    </div>
+
+                    <div class="box">
+                        <div class="content">
+                            <p>You have been logged out of your session.</p>
+                            <p class="mt-4">
+                                <strong>What's next?</strong>
+                            </p>
+                            <ul>
+                                <li><a href="/oauth2/authorization/keycloak">Login again</a> to access the application
+                                </li>
+                                <li>Close your browser to ensure complete logout</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="buttons">
+                        <a href="/oauth2/authorization/keycloak" class="button is-primary">Login Again</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

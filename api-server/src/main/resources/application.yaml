@@ -1,5 +1,10 @@
 spring:
   application:
     name: api-server
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/skeld
 server:
   port: 5001

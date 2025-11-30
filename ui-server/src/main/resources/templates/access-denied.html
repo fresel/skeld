@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Denied - Skeld</title>
+    <link rel="stylesheet" th:href="@{/webjars/bulma/1.0.4/css/bulma.min.css}">
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-half">
+                    <div class="notification is-danger">
+                        <h1 class="title">Access Denied</h1>
+                        <p class="subtitle" th:text="${message}">You don't have permission to access this resource.</p>
+                    </div>
+
+                    <div class="box">
+                        <div class="content">
+                            <p th:text="${details}">Please contact your administrator to request the necessary
+                                permissions.</p>
+                            <p class="mt-4">
+                                <strong>What you can do:</strong>
+                            </p>
+                            <ul>
+                                <li>Go back to the <a href="/">home page</a></li>
+                                <li>Contact your administrator to request access</li>
+                                <li>Check if you need additional scopes or permissions</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="buttons">
+                        <a href="/" class="button is-primary">Go to Home</a>
+                        <button onclick="history.back()" class="button is-light">Go Back</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

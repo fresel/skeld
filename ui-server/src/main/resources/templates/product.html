@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - Skeld</title>
+    <link rel="stylesheet" th:href="@{/webjars/bulma/1.0.4/css/bulma.min.css}">
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <div class="level">
+                <div class="level-left">
+                    <div class="level-item">
+                        <h1 class="title">Products</h1>
+                    </div>
+                </div>
+                <div class="level-right">
+                    <div class="level-item">
+                        <a href="/" class="button is-light">Back to Home</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box" th:if="${products != null and !products.isEmpty()}">
+                <table class="table is-fullwidth is-striped is-hoverable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th class="has-text-right">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="product : ${products}">
+                            <td th:text="${product.id}">1</td>
+                            <td th:text="${product.name}">Product Name</td>
+                            <td th:text="${product.description}">Product Description</td>
+                            <td class="has-text-right"
+                                th:text="${#numbers.formatDecimal(product.price, 1, 2) + ' SEK'}">0.00 SEK</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="notification is-warning" th:if="${products == null or products.isEmpty()}">
+                <p>No products available.</p>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

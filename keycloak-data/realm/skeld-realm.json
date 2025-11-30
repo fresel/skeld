@@ -1,7 +1,8 @@
 {
-  "realm": "myrealm",
+  "realm": "skeld",
   "enabled": true,
   "registrationAllowed": true,
+  "sslRequired": "none",
   "users": [
     {
       "id": "11111111-2222-3333-4444-555555555555",
@@ -49,7 +50,51 @@
       ],
       "defaultClientScopes": [
         "profile",
-        "email",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "Products.Read",
+        "Products.Write"
+      ]
+    },
+    {
+      "clientId": "api-server",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "defaultClientScopes": [
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "Products.Read",
+        "Products.Write"
+      ]
+    },
+    {
+      "clientId": "ui-client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "changeme",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:8080/login/oauth2/code/keycloak"
+      ],
+      "webOrigins": [
+        "http://localhost:8080"
+      ],
+      "defaultClientScopes": [
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
         "Products.Read",
         "Products.Write"
       ]

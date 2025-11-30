@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: ui-server
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: ui-client
+            client-secret: changeme
+            scope:
+              - openid
+              - profile
+              - email
+              - Products.Read
+              - Products.Write
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8180/realms/skeld
+            user-name-attribute: preferred_username
+
+server:
+  port: 8080
