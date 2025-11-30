@@ -1,0 +1,22 @@
+@ACCESS_TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJZWDVhcFJyNjdNc2pCd25GZl9aelVoREtUdW5WOThkdXBYR1pDQUF2WXpJIn0.eyJleHAiOjE3NjQ1Mjc0MTQsImlhdCI6MTc2NDUyNzExNCwianRpIjoib25ydGFjOmViMTY2NWZkLWM0YWItNjI5My0xMmVkLTRiNTA0Zjg2ODFmOSIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODE4MC9yZWFsbXMvc2tlbGQiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJ1aS1jbGllbnQiLCJzaWQiOiJmOTUwZjAyNi03NDA5LTdiNWItMjgwMy04NzA5YTEwMzBmNjMiLCJzY29wZSI6Im9wZW5pZCBQcm9kdWN0cy5SZWFkIHByb2ZpbGUgZW1haWwiLCJuYW1lIjoiRGV2IFVzZXIiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJkZXZ1c2VyIiwiZ2l2ZW5fbmFtZSI6IkRldiIsImZhbWlseV9uYW1lIjoiVXNlciIsImVtYWlsIjoiZGV2dXNlckBleGFtcGxlLmNvbSJ9.daRzfGwVsSJvVJE07EzghetdtsK4-Bhj-s3hdtKPZk_F2MU5233-eLUmJ3ZhglefCxq49EMuweFk-S3tVzJ20qz0Zc-xO0n44ClKE5KRHVDc6xGwrorIb5hENez3JDlYsSJnPBXxTXpZHq8R68j9UBsqZlLQFK3Y2SOhfAVbE8ZHv75YZcq6Q4VJZGKpB0JcqtnhUYeqo_IfDXLjk74fqicMF2zRzA3AG9laQCpys4A146aF2pNe9qzxNj0wzZ-dtUogLtFbzQfQQIcPOE8DshUmp2x2LgcBUcs89ruy5HbGswvKqiGiuVcA_11cNjdOQCOn5x6lLUJiGD19AdFhqQ
+
+### Get access token
+#@name token_request
+POST http://localhost:8180/realms/skeld/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{oauth2_clientId}}&client_secret={{oauth2_clientSecret}}&username={{oauth2_username}}&password={{oauth2_password}}&scope={{oauth2_scope}}
+
+> {%
+    client.global.set("access_token", response.body.access_token);
+%}
+
+### Get all products
+#@ref token_request
+GET http://localhost:5001/api/products
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{access_token}}
+
+?? status == 200
+###
