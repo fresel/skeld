@@ -7,7 +7,6 @@ spring:
         registration:
           keycloak:
             client-id: ui-client
-            client-secret: changeme
             scope:
               - openid
               - profile
