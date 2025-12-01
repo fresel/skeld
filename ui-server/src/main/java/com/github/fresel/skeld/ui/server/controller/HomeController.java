@@ -10,16 +10,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class HomeController {
 
   @GetMapping("/")
-  public String home(Model model, @AuthenticationPrincipal OidcUser user,
-      @AuthenticationPrincipal(expression = "idToken.tokenValue") String accessToken) {
-    if (user != null) {
-      model.addAttribute("username", user.getPreferredUsername());
-      model.addAttribute("email", user.getEmail());
-      model.addAttribute("accessToken", accessToken);
-      model.addAttribute("message", "Welcome to Skeld!");
+  public String home(Model model, @AuthenticationPrincipal OidcUser principal) {
+    model.addAttribute("title", "Skeld UI Server");
+
+    if (principal != null) {
+      String username = principal.getPreferredUsername();
+      model.addAttribute("message", "Welcome back, " + username + "!");
     } else {
-      model.addAttribute("message", "Hello, Guest!");
+      model.addAttribute("message", "Welcome to Skeld UI Server!");
     }
+
     return "index";
   }
 

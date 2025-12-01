@@ -85,7 +85,8 @@
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
       "redirectUris": [
-        "http://localhost:8080/login/oauth2/code/keycloak"
+        "http://localhost:8080/login/oauth2/code/keycloak",
+        "http://localhost:8080/logged-out"
       ],
       "webOrigins": [
         "http://localhost:8080"

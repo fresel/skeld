@@ -10,66 +10,93 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  @Bean
-  SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/public/**", "/error", "/logged-out", "/access-denied", "/", "/webjars/**").permitAll()
-            .anyRequest().authenticated())
-        .oauth2Login(oauth2 -> oauth2
-            .userInfoEndpoint(userInfo -> userInfo
-                .oidcUserService(this.oidcUserService()))
-            .defaultSuccessUrl("/", true))
-        .exceptionHandling(exceptions -> exceptions
-            .accessDeniedHandler((request, response, accessDeniedException) -> {
-              response.sendRedirect("/access-denied");
-            }))
-        .logout(logout -> logout
-            .logoutUrl("/logout")
-            .logoutSuccessUrl("/logged-out")
-            .invalidateHttpSession(true)
-            .clearAuthentication(true)
-            .deleteCookies("JSESSIONID", "KEYCLOAK_SESSION", "KEYCLOAK_IDENTITY", "KEYCLOAK_IDENTITY_LEGACY")
-            .permitAll());
+  private static final String[] PUBLIC_PATHS = {
+      "/public/**", "/logged-out", "/access-denied", "/auth-error", "/", "/webjars/**"
+  };
 
-    return http.build();
+  private static final String[] COOKIES_TO_DELETE = {
+      "JSESSIONID", "KEYCLOAK_SESSION", "KEYCLOAK_IDENTITY", "KEYCLOAK_IDENTITY_LEGACY"
+  };
+
+  @Bean
+  SecurityFilterChain filterChain(HttpSecurity http, LogoutSuccessHandler oidcLogoutSuccessHandler) throws Exception {
+    return http
+        .authorizeHttpRequests(this::configureAuthorization)
+        .oauth2Login(this::configureOAuth2Login)
+        .exceptionHandling(this::configureExceptionHandling)
+        .logout(logout -> configureLogout(logout, oidcLogoutSuccessHandler))
+        .build();
   }
 
   @Bean
   OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
-    final OidcUserService delegate = new OidcUserService();
+    OidcUserService delegate = new OidcUserService();
+    return userRequest -> enrichUserWithScopes(delegate.loadUser(userRequest), userRequest);
+  }
 
-    return (userRequest) -> {
-      OidcUser oidcUser = delegate.loadUser(userRequest);
+  @Bean
+  LogoutSuccessHandler oidcLogoutSuccessHandler(ClientRegistrationRepository clientRegistrationRepository) {
+    OidcClientInitiatedLogoutSuccessHandler handler = new OidcClientInitiatedLogoutSuccessHandler(
+        clientRegistrationRepository);
+    handler.setPostLogoutRedirectUri("{baseUrl}/logged-out");
+    return handler;
+  }
 
-      // Extract scopes from the access token and map them to authorities
-      Set<GrantedAuthority> mappedAuthorities = new HashSet<>(oidcUser.getAuthorities());
+  private void configureAuthorization(
+      AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {
+    auth.requestMatchers(PUBLIC_PATHS).permitAll()
+        .anyRequest().authenticated();
+  }
 
-      // Get scopes from the access token
-      Collection<String> scopes = userRequest.getAccessToken().getScopes();
+  private void configureOAuth2Login(OAuth2LoginConfigurer<HttpSecurity> oauth2) {
+    oauth2.userInfoEndpoint(userInfo -> userInfo.oidcUserService(oidcUserService()))
+        .defaultSuccessUrl("/", true)
+        .failureUrl("/auth-error");
+  }
 
-      // Map each scope to a SCOPE_ authority
-      Set<GrantedAuthority> scopeAuthorities = scopes.stream()
-          .map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope))
-          .collect(Collectors.toSet());
+  private void configureExceptionHandling(ExceptionHandlingConfigurer<HttpSecurity> exceptions) {
+    exceptions.accessDeniedHandler((request, response, ex) -> response.sendRedirect("/access-denied"));
+  }
 
-      mappedAuthorities.addAll(scopeAuthorities);
+  private void configureLogout(LogoutConfigurer<HttpSecurity> logout, LogoutSuccessHandler oidcLogoutSuccessHandler) {
+    logout
+        .logoutSuccessHandler(oidcLogoutSuccessHandler)
+        .invalidateHttpSession(true)
+        .clearAuthentication(true)
+        .deleteCookies(COOKIES_TO_DELETE)
+        .permitAll();
+  }
 
-      return new DefaultOidcUser(mappedAuthorities, oidcUser.getIdToken(), oidcUser.getUserInfo());
-    };
+  private OidcUser enrichUserWithScopes(OidcUser oidcUser, OidcUserRequest userRequest) {
+    Set<GrantedAuthority> authorities = new HashSet<>(oidcUser.getAuthorities());
+    authorities.addAll(extractScopeAuthorities(userRequest.getAccessToken().getScopes()));
+    return new DefaultOidcUser(authorities, oidcUser.getIdToken(), oidcUser.getUserInfo());
+  }
+
+  private Set<GrantedAuthority> extractScopeAuthorities(Collection<String> scopes) {
+    return scopes.stream()
+        .map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope))
+        .collect(Collectors.toSet());
   }
 }
