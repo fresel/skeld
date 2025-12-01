@@ -19,4 +19,11 @@ public class ErrorController {
     model.addAttribute("message", "You have been successfully logged out.");
     return "logged-out";
   }
+
+  @GetMapping("/auth-error")
+  public String authError(Model model) {
+    model.addAttribute("message", "Authentication failed.");
+    model.addAttribute("details", "There was a problem logging you in. Please try again or contact support.");
+    return "auth-error";
+  }
 }

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Error - Skeld</title>
+    <link rel="stylesheet" th:href="@{/webjars/bulma/1.0.4/css/bulma.min.css}">
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <div class="notification is-danger">
+                <h1 class="title">Authentication Error</h1>
+                <p class="subtitle" th:text="${message}">Authentication failed.</p>
+                <p th:text="${details}">There was a problem logging you in.</p>
+            </div>
+            <div class="buttons">
+                <a href="/" class="button is-primary">Go to Home</a>
+                <a href="/oauth2/authorization/keycloak" class="button is-link">Try Again</a>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

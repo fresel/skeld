@@ -18,10 +18,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -29,7 +32,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
   private static final String[] PUBLIC_PATHS = {
-      "/public/**", "/error", "/logged-out", "/access-denied", "/", "/webjars/**"
+      "/public/**", "/logged-out", "/access-denied", "/auth-error", "/", "/webjars/**"
   };
 
   private static final String[] COOKIES_TO_DELETE = {
@@ -37,12 +40,12 @@ public class SecurityConfig {
   };
 
   @Bean
-  SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  SecurityFilterChain filterChain(HttpSecurity http, LogoutSuccessHandler oidcLogoutSuccessHandler) throws Exception {
     return http
         .authorizeHttpRequests(this::configureAuthorization)
         .oauth2Login(this::configureOAuth2Login)
         .exceptionHandling(this::configureExceptionHandling)
-        .logout(this::configureLogout)
+        .logout(logout -> configureLogout(logout, oidcLogoutSuccessHandler))
         .build();
   }
 
@@ -50,6 +53,14 @@ public class SecurityConfig {
   OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
     OidcUserService delegate = new OidcUserService();
     return userRequest -> enrichUserWithScopes(delegate.loadUser(userRequest), userRequest);
+  }
+
+  @Bean
+  LogoutSuccessHandler oidcLogoutSuccessHandler(ClientRegistrationRepository clientRegistrationRepository) {
+    OidcClientInitiatedLogoutSuccessHandler handler = new OidcClientInitiatedLogoutSuccessHandler(
+        clientRegistrationRepository);
+    handler.setPostLogoutRedirectUri("{baseUrl}/logged-out");
+    return handler;
   }
 
   private void configureAuthorization(
@@ -60,16 +71,17 @@ public class SecurityConfig {
 
   private void configureOAuth2Login(OAuth2LoginConfigurer<HttpSecurity> oauth2) {
     oauth2.userInfoEndpoint(userInfo -> userInfo.oidcUserService(oidcUserService()))
-        .defaultSuccessUrl("/", true);
+        .defaultSuccessUrl("/", true)
+        .failureUrl("/auth-error");
   }
 
   private void configureExceptionHandling(ExceptionHandlingConfigurer<HttpSecurity> exceptions) {
     exceptions.accessDeniedHandler((request, response, ex) -> response.sendRedirect("/access-denied"));
   }
 
-  private void configureLogout(LogoutConfigurer<HttpSecurity> logout) {
+  private void configureLogout(LogoutConfigurer<HttpSecurity> logout, LogoutSuccessHandler oidcLogoutSuccessHandler) {
     logout
-        .logoutSuccessUrl("/")
+        .logoutSuccessHandler(oidcLogoutSuccessHandler)
         .invalidateHttpSession(true)
         .clearAuthentication(true)
         .deleteCookies(COOKIES_TO_DELETE)

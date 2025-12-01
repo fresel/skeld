@@ -7,12 +7,12 @@ spring:
         registration:
           keycloak:
             client-id: ui-client
+            client-secret: changeme
             scope:
               - openid
               - profile
               - email
               - Products.Read
-              - Products.Write
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
         provider:
