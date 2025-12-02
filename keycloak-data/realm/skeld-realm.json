@@ -3,6 +3,33 @@
   "enabled": true,
   "registrationAllowed": true,
   "sslRequired": "none",
+  "identityProviders": [
+    {
+      "alias": "dex",
+      "displayName": "Dex OIDC",
+      "providerId": "oidc",
+      "enabled": true,
+      "trustEmail": true,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "authenticateByDefault": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "clientId": "keycloak-client",
+        "clientSecret": "changeme",
+        "authorizationUrl": "http://localhost:5556/dex/auth",
+        "tokenUrl": "http://dex:5556/dex/token",
+        "userInfoUrl": "http://dex:5556/dex/userinfo",
+        "jwksUrl": "http://dex:5556/dex/keys",
+        "issuer": "http://dex:5556/dex",
+        "defaultScope": "openid profile email",
+        "syncMode": "IMPORT",
+        "useJwksUrl": "true",
+        "validateSignature": "true"
+      }
+    }
+  ],
   "users": [
     {
       "id": "11111111-2222-3333-4444-555555555555",

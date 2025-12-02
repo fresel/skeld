@@ -33,6 +33,18 @@ services:
     #   - postgres
     networks:
       - keycloak_network
+  dex:
+    container_name: dex
+    image: ghcr.io/dexidp/dex:latest
+    volumes:
+      - ./docker/dex:/etc/dex/cfg
+    ports:
+      - "5556:5556"
+    environment:
+      DEX_LOG_LEVEL: debug
+    command: ["dex", "serve", "/etc/dex/cfg/dex-config.yaml"]
+    networks:
+      - keycloak_network
 networks:
   keycloak_network:
     driver: bridge
